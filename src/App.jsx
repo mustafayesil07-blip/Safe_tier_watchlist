@@ -64,7 +64,6 @@ function sortEntries(entries, sortMode, rowColors) {
     })
   }
 
-  // Default: verdict priority
   return [...entries].sort(([, a], [, b]) => {
     const ao = VERDICT_ORDER[a.verdict?.verdict] ?? 10
     const bo = VERDICT_ORDER[b.verdict?.verdict] ?? 10
@@ -75,20 +74,83 @@ function sortEntries(entries, sortMode, rowColors) {
   })
 }
 
+// ── localStorage helpers ──────────────────────────────────────────────────────
+
+function loadResults() {
+  try {
+    const raw = localStorage.getItem('scan_results')
+    if (!raw) return { map: new Map(), savedAt: null }
+    const { entries, savedAt } = JSON.parse(raw)
+    // Restore only terminal states; skip anything still loading
+    const map = new Map(
+      entries.filter(([, e]) => e.status === 'done' || e.status === 'error')
+    )
+    return { map, savedAt: savedAt || null }
+  } catch { return { map: new Map(), savedAt: null } }
+}
+
+function saveResults(resultsMap) {
+  try {
+    const entries = Array.from(resultsMap.entries())
+      .filter(([, e]) => e.status === 'done' || e.status === 'error')
+    localStorage.setItem('scan_results', JSON.stringify({ entries, savedAt: Date.now() }))
+  } catch {}
+}
+
+function loadRowColors() {
+  try {
+    const raw = localStorage.getItem('row_colors')
+    return raw ? new Map(JSON.parse(raw)) : new Map()
+  } catch { return new Map() }
+}
+
+function timeAgo(ts) {
+  if (!ts) return null
+  const mins = Math.round((Date.now() - ts) / 60000)
+  if (mins < 1)  return 'az önce'
+  if (mins < 60) return `${mins} dakika önce`
+  const h = Math.round(mins / 60)
+  if (h < 24)    return `${h} saat önce`
+  return `${Math.round(h / 24)} gün önce`
+}
+
 export default function App() {
-  const [dte, setDte] = useState(45)
-  // Raw API results — no verdict stored here, computed reactively
-  const [results, setResults] = useState(new Map())
+  const [dte, setDte] = useState(() => {
+    const saved = Number(localStorage.getItem('dte'))
+    return saved > 0 ? saved : 45
+  })
+  // Results: loaded from localStorage on first render
+  const _initial = useMemo(() => loadResults(), [])
+  const [results,     setResults]     = useState(_initial.map)
+  const [lastScanAt,  setLastScanAt]  = useState(_initial.savedAt)
   const [scanningAll, setScanningAll] = useState(false)
-  const [sortMode, setSortMode] = useState('verdict')
-  const [viewMode, setViewMode] = useState('card') // 'card' | 'list'
-  const [rowColors, setRowColors] = useState(new Map())
+  // Sort mode + view mode — persisted
+  const [sortMode, setSortMode] = useState(() => localStorage.getItem('sort_mode') || 'verdict')
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('view_mode') || 'card')
+  // Row colors — persisted
+  const [rowColors, setRowColors] = useState(loadRowColors)
 
   // Manual date overrides — persisted, never overwritten by API scans
   const [manualDates, setManualDates] = useState(() => {
     try { return JSON.parse(localStorage.getItem('manual_dates') || '{}') }
     catch { return {} }
   })
+
+  // ── Persist preferences whenever they change ────────────────────────────────
+  useEffect(() => { localStorage.setItem('sort_mode', sortMode) }, [sortMode])
+  useEffect(() => { localStorage.setItem('view_mode', viewMode) }, [viewMode])
+  useEffect(() => { localStorage.setItem('dte', String(dte))    }, [dte])
+  useEffect(() => {
+    localStorage.setItem('row_colors', JSON.stringify(Array.from(rowColors.entries())))
+  }, [rowColors])
+
+  // Persist results whenever they change (skip loading states)
+  useEffect(() => {
+    const hasDone = Array.from(results.values()).some((e) => e.status === 'done' || e.status === 'error')
+    if (!hasDone) return
+    saveResults(results)
+    setLastScanAt(Date.now())
+  }, [results])
 
   // Custom personal ticker list — persisted
   const [customTickers, setCustomTickers] = useState(() => {
@@ -248,10 +310,15 @@ export default function App() {
           <section aria-label="Tarama sonuçları">
             {/* Controls row */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-radar-muted/50 tracking-wider">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-radar-muted/50">
                   {effectiveResults.size} sembol · DTE {dte}G
                 </span>
+                {lastScanAt && (
+                  <span className="text-xs text-radar-muted/35 border-l border-white/10 pl-2">
+                    Son tarama: {timeAgo(lastScanAt)}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <SortMenu sortMode={sortMode} onSortChange={setSortMode} />
