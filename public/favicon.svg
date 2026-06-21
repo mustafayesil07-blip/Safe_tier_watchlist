@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Dark background circle -->
+  <circle cx="32" cy="32" r="32" fill="#070B0F"/>
+  <!-- Outer radar ring -->
+  <circle cx="32" cy="32" r="28" stroke="#5BD6E6" stroke-width="1.5" stroke-opacity="0.6"/>
+  <!-- Middle radar ring -->
+  <circle cx="32" cy="32" r="20" stroke="#5BD6E6" stroke-width="1" stroke-opacity="0.4"/>
+  <!-- Inner radar ring -->
+  <circle cx="32" cy="32" r="12" stroke="#5BD6E6" stroke-width="1" stroke-opacity="0.3"/>
+  <!-- Center dot -->
+  <circle cx="32" cy="32" r="3" fill="#5BD6E6" fill-opacity="0.9"/>
+  <!-- Crosshairs -->
+  <line x1="32" y1="4" x2="32" y2="60" stroke="#5BD6E6" stroke-width="0.75" stroke-opacity="0.25"/>
+  <line x1="4" y1="32" x2="60" y2="32" stroke="#5BD6E6" stroke-width="0.75" stroke-opacity="0.25"/>
+  <!-- Sweep line (frozen at ~45 degrees) -->
+  <line x1="32" y1="32" x2="52" y2="12" stroke="#5BD6E6" stroke-width="2" stroke-linecap="round" stroke-opacity="0.9"/>
+  <!-- Sweep glow arc (quarter arc) -->
+  <path d="M32 32 L52 12 A28 28 0 0 0 32 4 Z" fill="#5BD6E6" fill-opacity="0.08"/>
+  <!-- Blip dot -->
+  <circle cx="45" cy="19" r="3.5" fill="#3DDC97" fill-opacity="0.9"/>
+  <circle cx="45" cy="19" r="6" fill="#3DDC97" fill-opacity="0.2"/>
+</svg>

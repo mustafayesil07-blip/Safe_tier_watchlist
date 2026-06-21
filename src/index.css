@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Radar sweep animation */
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes blink-bar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+body {
+  background-color: #070B0F;
+  color: #E8F0F5;
+  font-family: 'Chakra Petch', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0E141B;
+}
+::-webkit-scrollbar-thumb {
+  background: #5BD6E620;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5BD6E640;
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .radar-sweep {
+    animation: radar-sweep 4s linear infinite;
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 12px rgba(91, 214, 230, 0.15), 0 0 24px rgba(91, 214, 230, 0.05);
+  }
+
+  .glow-green {
+    box-shadow: 0 0 12px rgba(61, 220, 151, 0.2);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 12px rgba(255, 92, 92, 0.2);
+  }
+
+  .border-hairline {
+    border-width: 1px;
+  }
+
+  .text-scanline::after {
+    content: '_';
+    animation: blink-bar 1s step-end infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
