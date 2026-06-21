@@ -52,19 +52,22 @@ const verdictCardStyle = {
   },
 }
 
-// Custom color override — stronger tint
-const customCardStyle = {
+// Custom color inline styles — bypass Tailwind class generation for consistent behavior
+const CUSTOM_STYLE = {
   green: {
-    bg: 'bg-radar-green/18 border-2 border-radar-green/55',
-    glow: 'hover:shadow-[0_0_36px_rgba(61,220,151,0.22)] glow-green',
+    background: 'rgba(61, 220, 151, 0.16)',
+    border:     '2px solid rgba(61, 220, 151, 0.55)',
+    boxShadow:  '0 0 36px rgba(61, 220, 151, 0.18)',
   },
   blue: {
-    bg: 'bg-radar-cyan/15 border-2 border-radar-cyan/55',
-    glow: 'hover:shadow-[0_0_36px_rgba(91,214,230,0.22)] glow-cyan',
+    background: 'rgba(91, 214, 230, 0.16)',
+    border:     '2px solid rgba(91, 214, 230, 0.55)',
+    boxShadow:  '0 0 36px rgba(91, 214, 230, 0.18)',
   },
   red: {
-    bg: 'bg-radar-red/18 border-2 border-radar-red/55',
-    glow: 'hover:shadow-[0_0_36px_rgba(255,92,92,0.22)] glow-red',
+    background: 'rgba(255, 92, 92, 0.16)',
+    border:     '2px solid rgba(255, 92, 92, 0.55)',
+    boxShadow:  '0 0 36px rgba(255, 92, 92, 0.18)',
   },
 }
 
@@ -75,15 +78,11 @@ const COLOR_OPTIONS = [
 ]
 
 export default function ResultCard({ symbol, status, data, verdict, dte, customColor, onColorChange, onRemove }) {
-  const effectiveColor = customColor
-    ? null
-    : verdict?.color || 'muted'
+  const verdictColor  = verdict?.color || 'muted'
+  const baseStyle     = verdictCardStyle[verdictColor] || verdictCardStyle.muted
+  const inlineStyle   = customColor ? CUSTOM_STYLE[customColor] : undefined
 
-  const cardStyle = customColor
-    ? customCardStyle[customColor] || customCardStyle.green
-    : verdictCardStyle[effectiveColor] || verdictCardStyle.muted
-
-  const isEstimate  = data?.isEstimate
+  const isEstimate   = data?.isEstimate
   const earningsDate = data?.nextEarningsDate
   const formattedDate = earningsDate
     ? new Date(earningsDate + 'T00:00:00').toLocaleDateString('tr-TR', {
@@ -93,9 +92,10 @@ export default function ResultCard({ symbol, status, data, verdict, dte, customC
 
   return (
     <article
+      style={inlineStyle}
       className={`
         relative rounded-xl p-5 transition-all duration-200 group
-        ${cardStyle.bg} ${cardStyle.glow}
+        ${customColor ? '' : `${baseStyle.bg} ${baseStyle.glow}`}
       `}
     >
       {/* Remove button */}
