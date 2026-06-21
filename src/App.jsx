@@ -1,12 +1,13 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { getCached, setCached } from './utils/cache.js'
 import { getVerdict } from './utils/verdict.js'
 import { isETF } from './utils/etf.js'
-import { ALL_SAFE_TICKERS, HIGHER_IV_TIER } from './data/safeTier.js'
+import { ALL_SAFE_TICKERS } from './data/safeTier.js'
 import Header from './components/Header.jsx'
 import DTESettings from './components/DTESettings.jsx'
 import TickerInput from './components/TickerInput.jsx'
 import SafeTierChips from './components/SafeTierChips.jsx'
+import CustomTickerList from './components/CustomTickerList.jsx'
 import SummaryBanner from './components/SummaryBanner.jsx'
 import ResultCard from './components/ResultCard.jsx'
 import SortMenu from './components/SortMenu.jsx'
@@ -29,7 +30,7 @@ async function scanWithConcurrency(symbols, scanFn, concurrency = 4) {
   await Promise.all(workers)
 }
 
-const VERDICT_ORDER = { KACIN: 0, BILINMIYOR: 1, ACIK: 2, GECMIS: 3, HATA: 4 }
+const VERDICT_ORDER = { KACIN: 0, BILINMIYOR: 1, GUVENLI: 2, GECMIS: 3, HATA: 4 }
 
 function sortResults(resultsMap, sortMode) {
   const entries = Array.from(resultsMap.entries())
@@ -64,12 +65,29 @@ function sortResults(resultsMap, sortMode) {
 
 export default function App() {
   const [dte, setDte] = useState(45)
-  // results: Map<symbol, { status: 'loading'|'done'|'error', data: object|null, verdict: object|null }>
   const [results, setResults] = useState(new Map())
   const [scanningAll, setScanningAll] = useState(false)
   const [sortMode, setSortMode] = useState('verdict')
-  // rowColors: Map<symbol, 'green'|'blue'|'red'|null>
   const [rowColors, setRowColors] = useState(new Map())
+
+  // Custom ticker list — persisted to localStorage
+  const [customTickers, setCustomTickers] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('custom_tickers') || '[]') }
+    catch { return [] }
+  })
+  useEffect(() => {
+    localStorage.setItem('custom_tickers', JSON.stringify(customTickers))
+  }, [customTickers])
+
+  const addCustomTicker = useCallback((symbol) => {
+    const sym = symbol.toUpperCase().trim()
+    if (!sym) return
+    setCustomTickers((prev) => prev.includes(sym) ? prev : [...prev, sym])
+  }, [])
+
+  const removeCustomTicker = useCallback((symbol) => {
+    setCustomTickers((prev) => prev.filter((t) => t !== symbol))
+  }, [])
 
   // Helper: merge a patch into one symbol's entry
   const updateResult = useCallback((symbol, patch) => {
@@ -215,7 +233,15 @@ export default function App() {
         {/* Safe Tier chips */}
         <SafeTierChips
           onScanTicker={handleScanTicker}
-          scannedSymbols={new Set(results.keys())}
+          results={results}
+        />
+
+        {/* Personal custom ticker list */}
+        <CustomTickerList
+          tickers={customTickers}
+          onAdd={addCustomTicker}
+          onRemove={removeCustomTicker}
+          onScanTicker={handleScanTicker}
           results={results}
         />
 

@@ -3,8 +3,8 @@ import { isETF } from './etf.js'
 export function getVerdict(symbol, earningsData, dte) {
   if (isETF(symbol)) {
     return {
-      verdict: 'ACIK',
-      label: 'AÇIK',
+      verdict: 'GUVENLI',
+      label: 'GÜVENLİ',
       reason: 'ETF — earnings yok, her zaman temiz',
       color: 'green',
       daysUntil: null,
@@ -60,8 +60,8 @@ export function getVerdict(symbol, earningsData, dte) {
   }
 
   return {
-    verdict: 'ACIK',
-    label: 'AÇIK',
+    verdict: 'GUVENLI',
+    label: 'GÜVENLİ',
     reason: `Earnings ${daysUntil} gün sonra — pencereden sonra`,
     color: 'green',
     daysUntil,

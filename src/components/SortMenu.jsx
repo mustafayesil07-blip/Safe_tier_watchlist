@@ -1,10 +1,10 @@
 import React from 'react'
 
 const SORT_OPTIONS = [
-  { id: 'verdict', label: 'Karar', icon: '⚑', title: 'KAÇIN önce, AÇIK sonra' },
+  { id: 'verdict', label: 'Karar',    icon: '⚑', title: 'KAÇIN önce, GÜVENLİ sonra' },
   { id: 'days',    label: 'Yakınlık', icon: '◷', title: 'Earnings tarihine kalan gün (azdan çoğa)' },
-  { id: 'alpha',   label: 'Sembol', icon: '↑A', title: 'Alfabetik A→Z' },
-  { id: 'added',   label: 'Ekleme', icon: '⊕', title: 'Eklenme sırasına göre' },
+  { id: 'alpha',   label: 'Sembol',   icon: '↑A', title: 'Alfabetik A→Z' },
+  { id: 'added',   label: 'Ekleme',   icon: '⊕', title: 'Eklenme sırasına göre' },
 ]
 
 export default function SortMenu({ sortMode, onSortChange }) {
