@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import VerdictBadge from './VerdictBadge.jsx'
 import FlightLineTimeline from './FlightLineTimeline.jsx'
 
@@ -40,22 +40,124 @@ function HourBadge({ hour }) {
 
 const leftBorderColor = {
   green: 'border-l-radar-green',
-  red: 'border-l-radar-red',
+  blue:  'border-l-radar-cyan',
+  red:   'border-l-radar-red',
   amber: 'border-l-radar-amber',
   muted: 'border-l-radar-muted/40',
 }
 
 const hoverGlow = {
   green: 'hover:shadow-[0_0_20px_rgba(61,220,151,0.07)]',
-  red: 'hover:shadow-[0_0_20px_rgba(255,92,92,0.1)]',
+  blue:  'hover:shadow-[0_0_20px_rgba(91,214,230,0.1)]',
+  red:   'hover:shadow-[0_0_20px_rgba(255,92,92,0.1)]',
   amber: 'hover:shadow-[0_0_20px_rgba(255,183,62,0.07)]',
   muted: 'hover:shadow-[0_0_20px_rgba(125,139,152,0.05)]',
 }
 
-export default function ResultCard({ symbol, status, data, verdict, dte, onRemove }) {
-  const color = verdict?.color || 'muted'
-  const borderClass = leftBorderColor[color] || leftBorderColor.muted
-  const glowClass = hoverGlow[color] || hoverGlow.muted
+// Inline color-picker: green / blue / red / clear
+const COLOR_OPTIONS = [
+  { id: 'green', hex: '#3DDC97', label: 'Yeşil' },
+  { id: 'blue',  hex: '#5BD6E6', label: 'Mavi'  },
+  { id: 'red',   hex: '#FF5C5C', label: 'Kırmızı' },
+]
+
+function ColorPicker({ customColor, onColorChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const activeHex = COLOR_OPTIONS.find((o) => o.id === customColor)?.hex
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="Satır rengini özelleştir"
+        aria-label="Renk seç"
+        className="
+          w-6 h-6 rounded flex items-center justify-center
+          transition-all duration-150
+          focus:outline-none focus:ring-1 focus:ring-radar-cyan/30
+          hover:bg-radar-muted/10
+        "
+        style={activeHex ? { color: activeHex } : {}}
+      >
+        {/* Paint bucket icon via unicode */}
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M11.5 1L14.5 4L6 12.5H3V9.5L11.5 1Z"
+            stroke={activeHex || 'rgba(125,139,152,0.45)'}
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          <circle
+            cx="13"
+            cy="14"
+            r="2"
+            fill={activeHex || 'rgba(125,139,152,0.3)'}
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          className="
+            absolute right-0 top-8 z-20
+            flex items-center gap-1.5 p-1.5
+            bg-radar-panel2 border border-radar-cyan/20 rounded-lg
+            shadow-[0_4px_16px_rgba(0,0,0,0.4)]
+          "
+        >
+          {COLOR_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              title={opt.label}
+              onClick={() => {
+                onColorChange(customColor === opt.id ? null : opt.id)
+                setOpen(false)
+              }}
+              className="w-5 h-5 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/20"
+              style={{
+                background: opt.hex,
+                boxShadow: customColor === opt.id ? `0 0 0 2px #0E141B, 0 0 0 3.5px ${opt.hex}` : 'none',
+              }}
+            />
+          ))}
+          {/* Clear button */}
+          {customColor && (
+            <button
+              title="Rengi kaldır"
+              onClick={() => { onColorChange(null); setOpen(false) }}
+              className="
+                w-5 h-5 rounded-full border border-radar-muted/30
+                flex items-center justify-center
+                text-radar-muted/50 hover:text-radar-muted text-xs
+                focus:outline-none
+              "
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function ResultCard({ symbol, status, data, verdict, dte, customColor, onColorChange, onRemove }) {
+  // customColor overrides verdict color for the left border
+  const effectiveColor = customColor || verdict?.color || 'muted'
+  const borderClass = leftBorderColor[effectiveColor] || leftBorderColor.muted
+  const glowClass   = hoverGlow[effectiveColor]       || hoverGlow.muted
 
   const isEstimate = data?.isEstimate
   const earningsDate = data?.nextEarningsDate
@@ -77,21 +179,23 @@ export default function ResultCard({ symbol, status, data, verdict, dte, onRemov
         group
       `}
     >
-      {/* Remove button */}
-      <button
-        onClick={() => onRemove(symbol)}
-        aria-label={`${symbol} kartını kaldır`}
-        className="
-          absolute top-3 right-3
-          w-6 h-6 rounded flex items-center justify-center
-          text-radar-muted/30 hover:text-radar-muted/80
-          hover:bg-radar-muted/10
-          transition-all duration-150
-          font-mono text-sm
-        "
-      >
-        ×
-      </button>
+      {/* Top-right action buttons */}
+      <div className="absolute top-3 right-3 flex items-center gap-1">
+        <ColorPicker customColor={customColor} onColorChange={onColorChange} />
+        <button
+          onClick={() => onRemove(symbol)}
+          aria-label={`${symbol} kartını kaldır`}
+          className="
+            w-6 h-6 rounded flex items-center justify-center
+            text-radar-muted/30 hover:text-radar-muted/80
+            hover:bg-radar-muted/10
+            transition-all duration-150
+            font-mono text-sm
+          "
+        >
+          ×
+        </button>
+      </div>
 
       {/* Header row */}
       <div className="flex items-start gap-3 mb-3">

@@ -9,6 +9,7 @@ import TickerInput from './components/TickerInput.jsx'
 import SafeTierChips from './components/SafeTierChips.jsx'
 import SummaryBanner from './components/SummaryBanner.jsx'
 import ResultCard from './components/ResultCard.jsx'
+import SortMenu from './components/SortMenu.jsx'
 
 // Concurrency-limited batch scanner
 async function scanWithConcurrency(symbols, scanFn, concurrency = 4) {
@@ -30,14 +31,31 @@ async function scanWithConcurrency(symbols, scanFn, concurrency = 4) {
 
 const VERDICT_ORDER = { KACIN: 0, BILINMIYOR: 1, ACIK: 2, GECMIS: 3, HATA: 4 }
 
-function sortResults(resultsMap) {
-  return Array.from(resultsMap.entries()).sort(([, a], [, b]) => {
+function sortResults(resultsMap, sortMode) {
+  const entries = Array.from(resultsMap.entries())
+
+  if (sortMode === 'added') return entries
+
+  if (sortMode === 'alpha') {
+    return [...entries].sort(([a], [b]) => a.localeCompare(b))
+  }
+
+  if (sortMode === 'days') {
+    return [...entries].sort(([, a], [, b]) => {
+      const aDays = a.verdict?.daysUntil ?? Infinity
+      const bDays = b.verdict?.daysUntil ?? Infinity
+      // loading/null go to the bottom
+      return aDays - bDays
+    })
+  }
+
+  // Default: verdict priority
+  return [...entries].sort(([, a], [, b]) => {
     const av = a.verdict?.verdict || 'LOADING'
     const bv = b.verdict?.verdict || 'LOADING'
     const aOrder = VERDICT_ORDER[av] ?? 10
     const bOrder = VERDICT_ORDER[bv] ?? 10
     if (aOrder !== bOrder) return aOrder - bOrder
-    // loading entries go to the end within same group
     if (a.status === 'loading' && b.status !== 'loading') return 1
     if (a.status !== 'loading' && b.status === 'loading') return -1
     return 0
@@ -49,6 +67,9 @@ export default function App() {
   // results: Map<symbol, { status: 'loading'|'done'|'error', data: object|null, verdict: object|null }>
   const [results, setResults] = useState(new Map())
   const [scanningAll, setScanningAll] = useState(false)
+  const [sortMode, setSortMode] = useState('verdict')
+  // rowColors: Map<symbol, 'green'|'blue'|'red'|null>
+  const [rowColors, setRowColors] = useState(new Map())
 
   // Helper: merge a patch into one symbol's entry
   const updateResult = useCallback((symbol, patch) => {
@@ -168,7 +189,16 @@ export default function App() {
     })
   }, [])
 
-  const sortedResults = sortResults(results)
+  const handleColorChange = useCallback((symbol, color) => {
+    setRowColors((prev) => {
+      const next = new Map(prev)
+      if (color) next.set(symbol, color)
+      else next.delete(symbol)
+      return next
+    })
+  }, [])
+
+  const sortedResults = sortResults(results, sortMode)
   const hasResults = results.size > 0
 
   return (
@@ -215,13 +245,16 @@ export default function App() {
         {/* Results grid */}
         {hasResults && (
           <section aria-label="Tarama sonuçları">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="font-mono text-[10px] text-radar-muted/50 tracking-widest uppercase">
-                Sonuçlar
-              </span>
-              <span className="font-mono text-[10px] text-radar-muted/30">
-                — {results.size} sembol · DTE {dte}G penceresi
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] text-radar-muted/50 tracking-widest uppercase">
+                  Sonuçlar
+                </span>
+                <span className="font-mono text-[10px] text-radar-muted/30">
+                  — {results.size} sembol · DTE {dte}G penceresi
+                </span>
+              </div>
+              <SortMenu sortMode={sortMode} onSortChange={setSortMode} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -233,6 +266,8 @@ export default function App() {
                   data={entry.data}
                   verdict={entry.verdict}
                   dte={dte}
+                  customColor={rowColors.get(symbol) ?? null}
+                  onColorChange={(color) => handleColorChange(symbol, color)}
                   onRemove={handleRemove}
                 />
               ))}
