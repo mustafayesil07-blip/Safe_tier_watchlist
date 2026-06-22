@@ -46,6 +46,79 @@ const COLOR_OPTIONS = [
   { id: 'red',   hex: '#FF5C5C', label: 'Kırmızı'  },
 ]
 
+const CHECKLIST_ITEMS = [
+  { id: 'ivr',     label: 'IVR'     },
+  { id: 'premium', label: 'Premium' },
+  { id: 'sdc',     label: 'SDC'     },
+  { id: 'sma',     label: 'SMA'     },
+  { id: 'rsi',     label: 'RSI'     },
+  { id: 'destek',  label: 'Destek'  },
+]
+
+function Checklist({ checkedItems, onCheckToggle }) {
+  const doneCount = CHECKLIST_ITEMS.filter((i) => checkedItems[i.id]).length
+  const total     = CHECKLIST_ITEMS.length
+
+  return (
+    <div className="mt-4 pt-3 border-t border-white/8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs text-radar-muted/55 uppercase tracking-wider">Kontrol Listesi</span>
+        <span className="text-xs font-mono text-radar-muted/40">{doneCount}/{total}</span>
+      </div>
+
+      {/* Items */}
+      <div className="space-y-2">
+        {CHECKLIST_ITEMS.map((item) => {
+          const checked = !!checkedItems[item.id]
+          return (
+            <button
+              key={item.id}
+              onClick={() => onCheckToggle(item.id)}
+              className="flex items-center gap-3 w-full text-left group/item"
+            >
+              {/* Checkbox */}
+              <span
+                className={`
+                  w-5 h-5 rounded border flex items-center justify-center
+                  flex-shrink-0 transition-all duration-150
+                  ${checked
+                    ? 'bg-radar-green/20 border-radar-green/60'
+                    : 'border-white/20 group-hover/item:border-white/40'
+                  }
+                `}
+              >
+                {checked && (
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2 6L5 9L10 3"
+                      stroke="#3DDC97"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </span>
+
+              {/* Label */}
+              <span
+                className={`text-sm transition-colors duration-150 ${
+                  checked
+                    ? 'text-radar-bright font-medium'
+                    : 'text-radar-muted/65 group-hover/item:text-radar-muted/90'
+                }`}
+              >
+                {item.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Date editor ──────────────────────────────────────────────────────────────
 function DateEditor({ currentDate, manualDate, onSave, onClear }) {
   const [editing, setEditing] = useState(false)
@@ -145,6 +218,7 @@ export default function ResultCard({
   symbol, status, data, verdict, dte,
   manualDate, onManualDateChange,
   customColor, onColorChange, onRemove,
+  checkedItems = {}, onCheckToggle,
 }) {
   const verdictColor = verdict?.color || 'muted'
   const baseCard     = VERDICT_CARD[verdictColor] || VERDICT_CARD.muted
@@ -254,8 +328,13 @@ export default function ResultCard({
         </div>
       )}
 
+      {/* Checklist */}
+      {onCheckToggle && (
+        <Checklist checkedItems={checkedItems} onCheckToggle={onCheckToggle} />
+      )}
+
       {/* Color strip */}
-      <div className="flex items-center gap-2 pt-3 border-t border-white/8 flex-wrap">
+      <div className="flex items-center gap-2 pt-3 border-t border-white/8 flex-wrap mt-4">
         <span className="text-xs text-radar-muted/50 flex-shrink-0">Renk:</span>
         {COLOR_OPTIONS.map((opt) => {
           const active = customColor === opt.id

@@ -4,7 +4,7 @@ import ResultCard, { CUSTOM_INLINE } from './ResultCard.jsx'
 
 const COLOR_DOT = { green: '#3DDC97', blue: '#5BD6E6', red: '#FF5C5C' }
 
-function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onManualDateChange, expanded, onToggle }) {
+function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onManualDateChange, checkedItems, onCheckToggle, expanded, onToggle }) {
   const verdict     = entry.verdict
   const displayDate = entry.effectiveData?.nextEarningsDate
   const formattedDate = displayDate
@@ -94,6 +94,8 @@ function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onM
             onColorChange={(color) => onColorChange(symbol, color)}
             onRemove={onRemove}
             onManualDateChange={(date) => onManualDateChange(symbol, date)}
+            checkedItems={checkedItems}
+            onCheckToggle={(itemId) => onCheckToggle(symbol, itemId)}
           />
         </div>
       )}
@@ -101,7 +103,7 @@ function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onM
   )
 }
 
-export default function ListView({ sortedEntries, dte, rowColors, onColorChange, onRemove, onManualDateChange }) {
+export default function ListView({ sortedEntries, dte, rowColors, onColorChange, onRemove, onManualDateChange, checklist, onCheckToggle }) {
   const [expanded, setExpanded] = useState(new Set())
 
   const toggle = (symbol) => {
@@ -134,6 +136,8 @@ export default function ListView({ sortedEntries, dte, rowColors, onColorChange,
           onColorChange={onColorChange}
           onRemove={onRemove}
           onManualDateChange={onManualDateChange}
+          checkedItems={checklist?.[symbol] || {}}
+          onCheckToggle={onCheckToggle}
           expanded={expanded.has(symbol)}
           onToggle={() => toggle(symbol)}
         />

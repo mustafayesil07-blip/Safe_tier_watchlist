@@ -136,6 +136,12 @@ export default function App() {
     catch { return {} }
   })
 
+  // Checklist state — { [symbol]: { ivr, premium, sdc, sma, rsi, destek } }
+  const [checklist, setChecklist] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('checklist_state') || '{}') }
+    catch { return {} }
+  })
+
   // ── Persist preferences whenever they change ────────────────────────────────
   useEffect(() => { localStorage.setItem('sort_mode', sortMode) }, [sortMode])
   useEffect(() => { localStorage.setItem('view_mode', viewMode) }, [viewMode])
@@ -143,6 +149,24 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('row_colors', JSON.stringify(Array.from(rowColors.entries())))
   }, [rowColors])
+  useEffect(() => {
+    localStorage.setItem('checklist_state', JSON.stringify(checklist))
+  }, [checklist])
+
+  // Persist results whenever they change (skip loading states)
+  useEffect(() => {
+    const hasDone = Array.from(results.values()).some((e) => e.status === 'done' || e.status === 'error')
+    if (!hasDone) return
+    saveResults(results)
+    setLastScanAt(Date.now())
+  }, [results])
+
+  const handleCheckToggle = useCallback((symbol, itemId) => {
+    setChecklist((prev) => {
+      const cur = prev[symbol] || {}
+      return { ...prev, [symbol]: { ...cur, [itemId]: !cur[itemId] } }
+    })
+  }, [])
 
   // Persist results whenever they change (skip loading states)
   useEffect(() => {
@@ -365,6 +389,8 @@ export default function App() {
                     onColorChange={(color) => handleColorChange(symbol, color)}
                     onRemove={handleRemove}
                     onManualDateChange={(date) => handleManualDateChange(symbol, date)}
+                    checkedItems={checklist[symbol] || {}}
+                    onCheckToggle={(itemId) => handleCheckToggle(symbol, itemId)}
                   />
                 ))}
               </div>
@@ -376,6 +402,8 @@ export default function App() {
                 onColorChange={handleColorChange}
                 onRemove={handleRemove}
                 onManualDateChange={handleManualDateChange}
+                checklist={checklist}
+                onCheckToggle={handleCheckToggle}
               />
             )}
           </section>
