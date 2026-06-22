@@ -213,12 +213,44 @@ function DateEditor({ currentDate, manualDate, onSave, onClear }) {
   )
 }
 
+// ── Note area ─────────────────────────────────────────────────────────────────
+function NoteArea({ note, onNoteChange }) {
+  return (
+    <div className="mt-4 pt-3 border-t border-white/8">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs text-radar-muted/55 uppercase tracking-wider">Not</span>
+        {note && (
+          <button
+            onClick={() => onNoteChange('')}
+            className="text-[10px] text-radar-muted/40 hover:text-radar-red/70 transition-colors"
+          >
+            × Temizle
+          </button>
+        )}
+      </div>
+      <textarea
+        value={note}
+        onChange={(e) => onNoteChange(e.target.value)}
+        placeholder="Buraya not ekle..."
+        rows={3}
+        className="
+          w-full bg-black/20 border border-white/10 rounded-lg
+          px-3 py-2 text-sm text-radar-bright/80 placeholder-radar-muted/30
+          focus:outline-none focus:border-radar-cyan/35
+          resize-none transition-colors duration-150 leading-relaxed
+        "
+      />
+    </div>
+  )
+}
+
 // ── Main card ─────────────────────────────────────────────────────────────────
 export default function ResultCard({
   symbol, status, data, verdict, dte,
   manualDate, onManualDateChange,
   customColor, onColorChange, onRemove,
   checkedItems = {}, onCheckToggle,
+  note = '', onNoteChange,
 }) {
   const verdictColor = verdict?.color || 'muted'
   const baseCard     = VERDICT_CARD[verdictColor] || VERDICT_CARD.muted
@@ -331,6 +363,11 @@ export default function ResultCard({
       {/* Checklist */}
       {onCheckToggle && (
         <Checklist checkedItems={checkedItems} onCheckToggle={onCheckToggle} />
+      )}
+
+      {/* Notes */}
+      {onNoteChange && (
+        <NoteArea note={note} onNoteChange={onNoteChange} />
       )}
 
       {/* Color strip */}

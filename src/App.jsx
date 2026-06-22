@@ -142,6 +142,12 @@ export default function App() {
     catch { return {} }
   })
 
+  // Notes — { [symbol]: string }
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('notes_state') || '{}') }
+    catch { return {} }
+  })
+
   // ── Persist preferences whenever they change ────────────────────────────────
   useEffect(() => { localStorage.setItem('sort_mode', sortMode) }, [sortMode])
   useEffect(() => { localStorage.setItem('view_mode', viewMode) }, [viewMode])
@@ -152,6 +158,9 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('checklist_state', JSON.stringify(checklist))
   }, [checklist])
+  useEffect(() => {
+    localStorage.setItem('notes_state', JSON.stringify(notes))
+  }, [notes])
 
   // Persist results whenever they change (skip loading states)
   useEffect(() => {
@@ -165,6 +174,17 @@ export default function App() {
     setChecklist((prev) => {
       const cur = prev[symbol] || {}
       return { ...prev, [symbol]: { ...cur, [itemId]: !cur[itemId] } }
+    })
+  }, [])
+
+  const handleNoteChange = useCallback((symbol, text) => {
+    setNotes((prev) => {
+      if (!text) {
+        const next = { ...prev }
+        delete next[symbol]
+        return next
+      }
+      return { ...prev, [symbol]: text }
     })
   }, [])
 
@@ -391,6 +411,8 @@ export default function App() {
                     onManualDateChange={(date) => handleManualDateChange(symbol, date)}
                     checkedItems={checklist[symbol] || {}}
                     onCheckToggle={(itemId) => handleCheckToggle(symbol, itemId)}
+                    note={notes[symbol] || ''}
+                    onNoteChange={(text) => handleNoteChange(symbol, text)}
                   />
                 ))}
               </div>
@@ -404,6 +426,8 @@ export default function App() {
                 onManualDateChange={handleManualDateChange}
                 checklist={checklist}
                 onCheckToggle={handleCheckToggle}
+                notes={notes}
+                onNoteChange={handleNoteChange}
               />
             )}
           </section>

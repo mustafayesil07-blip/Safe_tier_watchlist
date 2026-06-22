@@ -4,7 +4,7 @@ import ResultCard, { CUSTOM_INLINE } from './ResultCard.jsx'
 
 const COLOR_DOT = { green: '#3DDC97', blue: '#5BD6E6', red: '#FF5C5C' }
 
-function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onManualDateChange, checkedItems, onCheckToggle, expanded, onToggle }) {
+function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onManualDateChange, checkedItems, onCheckToggle, note, onNoteChange, expanded, onToggle }) {
   const verdict     = entry.verdict
   const displayDate = entry.effectiveData?.nextEarningsDate
   const formattedDate = displayDate
@@ -65,6 +65,11 @@ function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onM
               ✏
             </span>
           )}
+          {note && (
+            <span className="text-[10px] bg-radar-muted/10 text-radar-muted/60 border border-white/10 px-1.5 py-0.5 rounded-full flex-shrink-0">
+              📝
+            </span>
+          )}
         </div>
 
         {/* Days */}
@@ -96,6 +101,8 @@ function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onM
             onManualDateChange={(date) => onManualDateChange(symbol, date)}
             checkedItems={checkedItems}
             onCheckToggle={(itemId) => onCheckToggle(symbol, itemId)}
+            note={note}
+            onNoteChange={onNoteChange}
           />
         </div>
       )}
@@ -103,7 +110,7 @@ function ListRow({ symbol, entry, dte, customColor, onColorChange, onRemove, onM
   )
 }
 
-export default function ListView({ sortedEntries, dte, rowColors, onColorChange, onRemove, onManualDateChange, checklist, onCheckToggle }) {
+export default function ListView({ sortedEntries, dte, rowColors, onColorChange, onRemove, onManualDateChange, checklist, onCheckToggle, notes, onNoteChange }) {
   const [expanded, setExpanded] = useState(new Set())
 
   const toggle = (symbol) => {
@@ -138,6 +145,8 @@ export default function ListView({ sortedEntries, dte, rowColors, onColorChange,
           onManualDateChange={onManualDateChange}
           checkedItems={checklist?.[symbol] || {}}
           onCheckToggle={onCheckToggle}
+          note={notes?.[symbol] || ''}
+          onNoteChange={(text) => onNoteChange(symbol, text)}
           expanded={expanded.has(symbol)}
           onToggle={() => toggle(symbol)}
         />

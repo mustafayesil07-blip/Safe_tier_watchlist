@@ -1,9 +1,13 @@
 import React from 'react'
 
+const MANAGE_DTE = 21 // standard "close at 21 DTE" management target
+
 export default function FlightLineTimeline({ daysUntil, dte }) {
   // View range extends to dte * 1.45
   const viewMax = dte * 1.45
-  const dtePercent = (dte / viewMax) * 100 // where the DTE line sits
+  const dtePercent    = (dte / viewMax) * 100          // where the DTE line sits
+  const managePercent = (MANAGE_DTE / viewMax) * 100   // 21G management line
+  const showManage    = dte > MANAGE_DTE               // only show when DTE > 21
 
   // Null state
   if (daysUntil === null || daysUntil === undefined) {
@@ -32,6 +36,15 @@ export default function FlightLineTimeline({ daysUntil, dte }) {
       {/* Labels row */}
       <div className="relative flex justify-between items-end mb-1 text-[10px] font-mono text-radar-muted">
         <span className="text-radar-cyan font-semibold">BUGÜN</span>
+        {/* 21G management label */}
+        {showManage && (
+          <span
+            className="absolute text-purple-400/80 font-semibold"
+            style={{ left: `${managePercent}%`, transform: 'translateX(-50%)' }}
+          >
+            21G
+          </span>
+        )}
         {/* DTE label — positioned at dtePercent */}
         <span
           className="absolute text-radar-amber font-semibold"
@@ -65,6 +78,14 @@ export default function FlightLineTimeline({ daysUntil, dte }) {
         <div className="absolute left-0 top-1/2 -translate-y-1/2">
           <div className="w-2.5 h-2.5 rounded-full bg-radar-cyan border border-radar-cyan/50 shadow-[0_0_6px_rgba(91,214,230,0.6)]" />
         </div>
+
+        {/* 21G management vertical line */}
+        {showManage && (
+          <div
+            className="absolute top-0 bottom-0 border-l border-dashed border-purple-400/40"
+            style={{ left: `${managePercent}%` }}
+          />
+        )}
 
         {/* DTE vertical dashed line */}
         <div
@@ -128,7 +149,7 @@ export default function FlightLineTimeline({ daysUntil, dte }) {
       </div>
 
       {/* Bottom legend */}
-      <div className="flex items-center gap-3 mt-1.5 text-[10px] font-mono">
+      <div className="flex items-center gap-3 mt-1.5 text-[10px] font-mono flex-wrap">
         <span className="flex items-center gap-1">
           <span className="w-6 h-px bg-amber-400/40 border-t border-dashed border-radar-amber/40 inline-block" />
           <span className="text-radar-amber/70">tehlike penceresi</span>
@@ -137,6 +158,12 @@ export default function FlightLineTimeline({ daysUntil, dte }) {
           <span className="w-6 h-px bg-radar-green/30 inline-block" />
           <span className="text-radar-green/70">temiz bölge</span>
         </span>
+        {showManage && (
+          <span className="flex items-center gap-1">
+            <span className="w-6 h-px border-t border-dashed border-purple-400/50 inline-block" />
+            <span className="text-purple-400/70">21G yönetim</span>
+          </span>
+        )}
         {daysUntil !== null && !isPast && (
           <span className="ml-auto text-radar-muted/60">
             <span className={isInWindow ? 'text-radar-red font-semibold' : 'text-radar-bright/60'}>
