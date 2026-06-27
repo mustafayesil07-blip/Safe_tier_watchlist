@@ -354,46 +354,48 @@ export default function App() {
 
         {hasResults && (
           <section aria-label="Tarama sonuçları">
-            {/* Controls row */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-radar-muted/50">
+            {/* Row 1: meta info + view toggle */}
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="text-xs text-radar-muted/50 whitespace-nowrap">
                   {effectiveResults.size} sembol · DTE {dte}G
                 </span>
                 {lastScanAt && (
-                  <span className="text-xs text-radar-muted/35 border-l border-white/10 pl-2">
+                  <span className="text-xs text-radar-muted/35 border-l border-white/10 pl-2 whitespace-nowrap">
                     Son tarama: {timeAgo(lastScanAt)}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <SortMenu sortMode={sortMode} onSortChange={setSortMode} />
-                {/* View toggle */}
-                <div className="flex items-center border border-white/10 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => { setViewMode('card'); setFocusedSymbol(null) }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
-                      ${viewMode === 'card'
-                        ? 'bg-radar-cyan/15 text-radar-cyan border-r border-radar-cyan/20'
-                        : 'text-radar-muted/50 hover:text-radar-muted border-r border-white/8'
-                      }`}
-                  >
-                    <span>⊞</span>
-                    <span>Kart</span>
-                  </button>
-                  <button
-                    onClick={() => { setViewMode('list'); setFocusedSymbol(null) }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
-                      ${viewMode === 'list'
-                        ? 'bg-radar-cyan/15 text-radar-cyan'
-                        : 'text-radar-muted/50 hover:text-radar-muted'
-                      }`}
-                  >
-                    <span>≡</span>
-                    <span>Liste</span>
-                  </button>
-                </div>
+              {/* View toggle — always in top row, never wraps */}
+              <div className="flex items-center border border-white/10 rounded-lg overflow-hidden flex-shrink-0">
+                <button
+                  onClick={() => { setViewMode('card'); setFocusedSymbol(null) }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
+                    ${viewMode === 'card'
+                      ? 'bg-radar-cyan/15 text-radar-cyan border-r border-radar-cyan/20'
+                      : 'text-radar-muted/50 hover:text-radar-muted border-r border-white/8'
+                    }`}
+                >
+                  <span>⊞</span>
+                  <span>Kart</span>
+                </button>
+                <button
+                  onClick={() => { setViewMode('list'); setFocusedSymbol(null) }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
+                    ${viewMode === 'list'
+                      ? 'bg-radar-cyan/15 text-radar-cyan'
+                      : 'text-radar-muted/50 hover:text-radar-muted'
+                    }`}
+                >
+                  <span>≡</span>
+                  <span>Liste</span>
+                </button>
               </div>
+            </div>
+
+            {/* Row 2: sort menu — full width, wraps freely */}
+            <div className="mb-3">
+              <SortMenu sortMode={sortMode} onSortChange={setSortMode} />
             </div>
 
             {viewMode === 'card' && focusedSymbol ? (
