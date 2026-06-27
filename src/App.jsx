@@ -370,25 +370,25 @@ export default function App() {
                 <div className="flex items-center border border-white/10 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode('card')}
-                    title="Kart görünümü"
-                    className={`px-3 py-1.5 text-sm transition-colors duration-150
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
                       ${viewMode === 'card'
-                        ? 'bg-radar-cyan/15 text-radar-cyan'
-                        : 'text-radar-muted/50 hover:text-radar-muted'
+                        ? 'bg-radar-cyan/15 text-radar-cyan border-r border-radar-cyan/20'
+                        : 'text-radar-muted/50 hover:text-radar-muted border-r border-white/8'
                       }`}
                   >
-                    ⊞
+                    <span>⊞</span>
+                    <span>Kart</span>
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    title="Liste görünümü"
-                    className={`px-3 py-1.5 text-sm transition-colors duration-150
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
                       ${viewMode === 'list'
                         ? 'bg-radar-cyan/15 text-radar-cyan'
                         : 'text-radar-muted/50 hover:text-radar-muted'
                       }`}
                   >
-                    ≡
+                    <span>≡</span>
+                    <span>Liste</span>
                   </button>
                 </div>
               </div>
