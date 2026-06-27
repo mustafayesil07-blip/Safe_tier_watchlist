@@ -410,5 +410,5 @@ export default function ResultCard({
 
 // Helper for ListView (avoids re-importing isETF)
 function isETF(symbol) {
-  return ['SPY','QQQ','XLI','XBI','GLD','IWM','DIA','SMH','XLE','XLF','XLK'].includes(symbol)
+  return ['SPY','QQQ','XLI','XBI','GLD','IWM','DIA','SMH','XLE','XLF','XLK','XLV'].includes(symbol)
 }
