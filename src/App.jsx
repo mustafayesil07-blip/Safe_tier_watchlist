@@ -127,6 +127,8 @@ export default function App() {
   // Sort mode + view mode — persisted
   const [sortMode, setSortMode] = useState(() => localStorage.getItem('sort_mode') || 'verdict')
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('view_mode') || 'card')
+  // Single-card focus: set when a list row is tapped
+  const [focusedSymbol, setFocusedSymbol] = useState(null)
   // Row colors — persisted
   const [rowColors, setRowColors] = useState(loadRowColors)
 
@@ -369,7 +371,7 @@ export default function App() {
                 {/* View toggle */}
                 <div className="flex items-center border border-white/10 rounded-lg overflow-hidden">
                   <button
-                    onClick={() => setViewMode('card')}
+                    onClick={() => { setViewMode('card'); setFocusedSymbol(null) }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
                       ${viewMode === 'card'
                         ? 'bg-radar-cyan/15 text-radar-cyan border-r border-radar-cyan/20'
@@ -380,7 +382,7 @@ export default function App() {
                     <span>Kart</span>
                   </button>
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => { setViewMode('list'); setFocusedSymbol(null) }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors duration-150
                       ${viewMode === 'list'
                         ? 'bg-radar-cyan/15 text-radar-cyan'
@@ -394,7 +396,45 @@ export default function App() {
               </div>
             </div>
 
-            {viewMode === 'card' ? (
+            {viewMode === 'card' && focusedSymbol ? (
+              /* ── Focused single card (came from list tap) ── */
+              (() => {
+                const entry = effectiveResults.get(focusedSymbol)
+                if (!entry) return null
+                const symbol = focusedSymbol
+                return (
+                  <div>
+                    <button
+                      onClick={() => { setFocusedSymbol(null); setViewMode('list') }}
+                      className="
+                        flex items-center gap-2 mb-4 px-3 py-1.5 rounded-lg
+                        border border-white/10 text-sm text-radar-muted/60
+                        hover:text-radar-bright hover:border-white/20 transition-colors
+                      "
+                    >
+                      ← Listeye dön
+                    </button>
+                    <ResultCard
+                      symbol={symbol}
+                      status={entry.status}
+                      data={entry.effectiveData}
+                      verdict={entry.verdict}
+                      dte={dte}
+                      manualDate={entry.manualDate}
+                      customColor={rowColors.get(symbol) ?? null}
+                      onColorChange={(color) => handleColorChange(symbol, color)}
+                      onRemove={(sym) => { handleRemove(sym); setFocusedSymbol(null); setViewMode('list') }}
+                      onManualDateChange={(date) => handleManualDateChange(symbol, date)}
+                      checkedItems={checklist[symbol] || {}}
+                      onCheckToggle={(itemId) => handleCheckToggle(symbol, itemId)}
+                      note={notes[symbol] || ''}
+                      onNoteChange={(text) => handleNoteChange(symbol, text)}
+                    />
+                  </div>
+                )
+              })()
+            ) : viewMode === 'card' ? (
+              /* ── Normal card grid ── */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {sortedEntries.map(([symbol, entry]) => (
                   <ResultCard
@@ -417,17 +457,12 @@ export default function App() {
                 ))}
               </div>
             ) : (
+              /* ── List view ── */
               <ListView
                 sortedEntries={sortedEntries}
-                dte={dte}
                 rowColors={rowColors}
-                onColorChange={handleColorChange}
-                onRemove={handleRemove}
-                onManualDateChange={handleManualDateChange}
-                checklist={checklist}
-                onCheckToggle={handleCheckToggle}
                 notes={notes}
-                onNoteChange={handleNoteChange}
+                onRowClick={(symbol) => { setFocusedSymbol(symbol); setViewMode('card') }}
               />
             )}
           </section>
