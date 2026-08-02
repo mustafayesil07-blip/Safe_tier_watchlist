@@ -100,7 +100,7 @@ export default function ListView({ sortedEntries, rowColors, notes, onRowClick }
           symbol={symbol}
           entry={entry}
           customColor={rowColors.get(symbol) ?? null}
-          note={notes?.[symbol] || ''}
+          note={notes?.[symbol]?.text || ''}
           onRowClick={onRowClick}
         />
       ))}

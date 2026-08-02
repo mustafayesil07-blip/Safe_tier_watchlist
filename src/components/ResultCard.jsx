@@ -214,11 +214,20 @@ function DateEditor({ currentDate, manualDate, onSave, onClear }) {
 }
 
 // ── Note area ─────────────────────────────────────────────────────────────────
-function NoteArea({ note, onNoteChange }) {
+function NoteArea({ note, noteDate, onNoteChange }) {
+  const formattedDate = noteDate
+    ? new Date(noteDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null
+
   return (
     <div className="mt-4 pt-3 border-t border-white/8">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-radar-muted/55 uppercase tracking-wider">Not</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-radar-muted/55 uppercase tracking-wider">Not</span>
+          {formattedDate && (
+            <span className="text-[10px] font-mono text-radar-muted/35">{formattedDate}</span>
+          )}
+        </div>
         {note && (
           <button
             onClick={() => onNoteChange('')}
@@ -250,7 +259,7 @@ export default function ResultCard({
   manualDate, onManualDateChange,
   customColor, onColorChange, onRemove,
   checkedItems = {}, onCheckToggle,
-  note = '', onNoteChange,
+  note = '', noteDate = null, onNoteChange,
 }) {
   const verdictColor = verdict?.color || 'muted'
   const baseCard     = VERDICT_CARD[verdictColor] || VERDICT_CARD.muted
@@ -367,7 +376,7 @@ export default function ResultCard({
 
       {/* Notes */}
       {onNoteChange && (
-        <NoteArea note={note} onNoteChange={onNoteChange} />
+        <NoteArea note={note} noteDate={noteDate} onNoteChange={onNoteChange} />
       )}
 
       {/* Color strip */}

@@ -144,10 +144,20 @@ export default function App() {
     catch { return {} }
   })
 
-  // Notes — { [symbol]: string }
+  // Notes — { [symbol]: { text, updatedAt } }
+  // Migrates old plain-string format: assigns today's date automatically
   const [notes, setNotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('notes_state') || '{}') }
-    catch { return {} }
+    try {
+      const raw = JSON.parse(localStorage.getItem('notes_state') || '{}')
+      const today = new Date().toISOString()
+      const migrated = {}
+      for (const [sym, val] of Object.entries(raw)) {
+        migrated[sym] = typeof val === 'string'
+          ? { text: val, updatedAt: today }
+          : val
+      }
+      return migrated
+    } catch { return {} }
   })
 
   // ── Persist preferences whenever they change ────────────────────────────────
@@ -186,7 +196,7 @@ export default function App() {
         delete next[symbol]
         return next
       }
-      return { ...prev, [symbol]: text }
+      return { ...prev, [symbol]: { text, updatedAt: new Date().toISOString() } }
     })
   }, [])
 
@@ -429,7 +439,8 @@ export default function App() {
                       onManualDateChange={(date) => handleManualDateChange(symbol, date)}
                       checkedItems={checklist[symbol] || {}}
                       onCheckToggle={(itemId) => handleCheckToggle(symbol, itemId)}
-                      note={notes[symbol] || ''}
+                      note={notes[symbol]?.text || ''}
+                      noteDate={notes[symbol]?.updatedAt || null}
                       onNoteChange={(text) => handleNoteChange(symbol, text)}
                     />
                   </div>
@@ -453,7 +464,8 @@ export default function App() {
                     onManualDateChange={(date) => handleManualDateChange(symbol, date)}
                     checkedItems={checklist[symbol] || {}}
                     onCheckToggle={(itemId) => handleCheckToggle(symbol, itemId)}
-                    note={notes[symbol] || ''}
+                    note={notes[symbol]?.text || ''}
+                    noteDate={notes[symbol]?.updatedAt || null}
                     onNoteChange={(text) => handleNoteChange(symbol, text)}
                   />
                 ))}
