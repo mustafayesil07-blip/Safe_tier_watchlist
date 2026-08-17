@@ -31,4 +31,4 @@ export const SAFE_TIER = [
 
 export const HIGHER_IV_TIER = ['RKLB', 'ASTS', 'APLD', 'IREN', 'NBIS', 'SNDK', 'VSAT', 'SPCX']
 
-export const ALL_SAFE_TICKERS = SAFE_TIER.flatMap((c) => c.tickers)
+export const ALL_SAFE_TICKERS = [...SAFE_TIER.flatMap((c) => c.tickers), ...HIGHER_IV_TIER]
